@@ -213,7 +213,7 @@
   }
 
   /* ---------- source URL (per-device, in localStorage) ---------- */
-  function getUrl(){ return localStorage.getItem(CONFIG_KEY) || ''; }
+  function getUrl(){ return localStorage.getItem(CONFIG_KEY) || 'https://raw.githubusercontent.com/sama37/quiz/main/trivia-questions.json'; }
   function setUrl(u){ localStorage.setItem(CONFIG_KEY, u); }
   function clearUrl(){ localStorage.removeItem(CONFIG_KEY); }
 
