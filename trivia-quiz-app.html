@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Card Catalog — Trivia Quiz Builder</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #1c2420;
+    --bg-soft: #232d27;
+    --card: #efe3c2;
+    --card-shadow: #b9ac86;
+    --ink: #21261f;
+    --ink-soft: #4b4a3f;
+    --mustard: #c89b3c;
+    --stamp-red: #a6373b;
+    --stamp-green: #3b6e4e;
+    --line: rgba(33,38,31,0.14);
+    --paper-edge: #ded0a6;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(200,155,60,0.08), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(59,110,78,0.10), transparent 50%),
+      var(--bg);
+    color: var(--card);
+    font-family: 'Libre Franklin', sans-serif;
+    min-height: 100vh;
+    padding: 32px 16px 60px;
+  }
+  .wrap{ max-width: 760px; margin: 0 auto; }
+
+  /* Header */
+  header{ text-align:center; margin-bottom: 28px; }
+  .eyebrow{
+    font-family:'Special Elite', monospace;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    font-size: 11px;
+    color: var(--mustard);
+    margin-bottom: 8px;
+  }
+  h1{
+    font-family: 'Special Elite', monospace;
+    font-size: clamp(28px, 5vw, 40px);
+    margin: 0 0 6px;
+    color: var(--card);
+    letter-spacing: 0.01em;
+  }
+  .sub{ color: rgba(239,227,194,0.6); font-size: 14px; max-width: 480px; margin: 0 auto; }
+
+  /* Tabs */
+  .tabs{
+    display:flex; justify-content:center; gap: 4px; margin: 26px 0 22px;
+    border-bottom: 1px solid rgba(239,227,194,0.15);
+  }
+  .tab{
+    font-family:'Special Elite', monospace;
+    background: none; border: none; cursor: pointer;
+    color: rgba(239,227,194,0.55);
+    font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 10px 18px; position: relative; top: 1px;
+  }
+  .tab.active{ color: var(--mustard); border-bottom: 2px solid var(--mustard); }
+  .tab:hover{ color: var(--card); }
+
+  /* Card look */
+  .index-card{
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 3px;
+    padding: 22px 24px;
+    position: relative;
+    box-shadow: 0 10px 0 -4px var(--card-shadow), 0 14px 28px rgba(0,0,0,0.35);
+    background-image: repeating-linear-gradient(
+      to bottom, transparent, transparent 27px, var(--line) 28px
+    );
+    margin-bottom: 18px;
+  }
+  .index-card::before{
+    content:"";
+    position:absolute; left: 46px; top:0; bottom:0; width:1px;
+    background: rgba(166,55,59,0.28);
+  }
+  .index-card .content{ margin-left: 24px; }
+
+  /* Add form */
+  .field{ margin-bottom: 14px; }
+  label{
+    display:block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-soft); margin-bottom: 6px; font-weight: 600;
+  }
+  textarea, input[type=text]{
+    width: 100%; font-family: 'Libre Franklin', sans-serif; font-size: 15px;
+    padding: 10px 12px; border-radius: 2px; border: 1px solid rgba(33,38,31,0.25);
+    background: #fbf7ec; color: var(--ink); resize: vertical;
+  }
+  textarea:focus, input[type=text]:focus{ outline: 2px solid var(--mustard); outline-offset: 1px; }
+  .hint{ font-size: 12px; color: var(--ink-soft); margin-top: 5px; }
+
+  button.primary{
+    font-family:'Special Elite', monospace;
+    background: var(--stamp-green); color: #f4ecd8; border: none;
+    padding: 11px 20px; border-radius: 2px; cursor: pointer;
+    font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase;
+    transition: transform .1s ease;
+  }
+  button.primary:hover{ transform: translateY(-1px); }
+  button.primary:disabled{ background:#8a8a72; cursor:not-allowed; transform:none; }
+
+  button.ghost{
+    font-family:'Special Elite', monospace;
+    background: none; border: 1px solid rgba(239,227,194,0.35); color: var(--card);
+    padding: 10px 18px; border-radius: 2px; cursor: pointer; font-size: 13px;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  button.ghost:hover{ border-color: var(--mustard); color: var(--mustard); }
+
+  .delete-btn{
+    font-family: 'Libre Franklin', sans-serif; font-size: 12px; color: var(--stamp-red);
+    background: none; border: none; cursor: pointer; text-decoration: underline;
+    padding: 0; margin-top: 6px;
+  }
+
+  /* Library list */
+  .pool-count{
+    font-family:'Special Elite', monospace; text-align:center; color: rgba(239,227,194,0.55);
+    font-size: 13px; margin: 4px 0 20px; letter-spacing: 0.05em;
+  }
+  .q-card .content{ display:flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+  .q-text{ font-size: 15px; line-height: 1.5; }
+  .q-ans{ font-size: 12px; color: var(--stamp-green); font-weight:600; margin-top: 6px; }
+  .empty-state{
+    text-align:center; padding: 40px 20px; color: rgba(239,227,194,0.5);
+    font-family: 'Special Elite', monospace; font-size: 14px; line-height: 1.7;
+  }
+
+  /* Quiz */
+  .progress{
+    font-family:'Special Elite', monospace; text-align:center; color: var(--mustard);
+    font-size: 13px; letter-spacing: 0.08em; margin-bottom: 14px; text-transform: uppercase;
+  }
+  .quiz-question{ font-size: 17px; line-height: 1.6; margin-bottom: 16px; }
+  .blank-input{
+    display:inline-block; min-width: 140px; border: none; border-bottom: 2px solid var(--stamp-red);
+    background: transparent; font-family:'Special Elite', monospace; font-size: 16px;
+    padding: 2px 4px; color: var(--ink);
+  }
+  .blank-input:focus{ outline:none; border-bottom-color: var(--stamp-green); }
+  .quiz-nav{ display:flex; justify-content: space-between; align-items:center; margin-top: 20px; }
+  .quiz-status{ font-size: 12px; color: var(--ink-soft); }
+
+  .stamp{
+    position:absolute; top: 14px; right: 18px;
+    font-family:'Special Elite', monospace; font-size: 13px; letter-spacing: 0.05em;
+    padding: 4px 10px; border: 2px solid; border-radius: 3px; text-transform: uppercase;
+    transform: rotate(-8deg); opacity: 0; animation: stampIn .25s ease forwards;
+  }
+  .stamp.correct{ color: var(--stamp-green); border-color: var(--stamp-green); }
+  .stamp.wrong{ color: var(--stamp-red); border-color: var(--stamp-red); }
+  @keyframes stampIn{
+    0%{ opacity:0; transform: rotate(-8deg) scale(1.8); }
+    100%{ opacity:1; transform: rotate(-8deg) scale(1); }
+  }
+
+  .review-answer{ font-size: 13px; margin-top: 8px; }
+  .review-answer .correct-text{ color: var(--stamp-green); font-weight:600; }
+  .review-answer .wrong-text{ color: var(--stamp-red); text-decoration: line-through; }
+
+  .score-banner{
+    text-align:center; font-family:'Special Elite', monospace; font-size: 26px;
+    color: var(--mustard); margin: 6px 0 20px;
+  }
+  .score-sub{ text-align:center; color: rgba(239,227,194,0.6); font-size: 13px; margin-bottom: 26px; }
+
+  .center{ text-align:center; }
+  .row-actions{ display:flex; gap: 10px; justify-content:center; margin-top: 22px; }
+
+  .loading{ text-align:center; color: rgba(239,227,194,0.5); font-family:'Special Elite', monospace; padding: 30px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Personal Trivia Archive</div>
+    <h1>The Card Catalog</h1>
+    <p class="sub">File away what you learn. When you're ready, pull five cards at random for a fill‑in‑the‑blank quiz.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="library">Library</button>
+    <button class="tab" data-tab="quiz">Quiz</button>
+  </div>
+
+  <div id="app"><div class="loading">Opening the drawer…</div></div>
+</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'trivia_pool_v1';
+  let pool = [];
+  let loaded = false;
+  let activeTab = 'library';
+
+  // quiz state
+  let quiz = null; // { questions: [{id, prompt, answer}], answers: {}, checked: {}, currentIndex, finished }
+
+  const app = document.getElementById('app');
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    activeTab = t.dataset.tab;
+    tabs.forEach(x => x.classList.toggle('active', x === t));
+    if(activeTab === 'quiz' && (!quiz || quiz.finished)) startQuiz();
+    render();
+  }));
+
+  function uid(){ return 'q_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+  async function loadPool(){
+    try{
+      const res = await window.storage.get(STORAGE_KEY, false);
+      pool = res && res.value ? JSON.parse(res.value) : [];
+    }catch(e){
+      pool = [];
+    }
+    loaded = true;
+    render();
+  }
+
+  async function savePool(){
+    try{
+      await window.storage.set(STORAGE_KEY, JSON.stringify(pool), false);
+    }catch(e){
+      console.error('Could not save to the archive', e);
+    }
+  }
+
+  function addQuestion(prompt, answer){
+    pool.push({ id: uid(), prompt: prompt.trim(), answer: answer.trim() });
+    savePool();
+    render();
+  }
+
+  function deleteQuestion(id){
+    pool = pool.filter(q => q.id !== id);
+    savePool();
+    render();
+  }
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i+1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function startQuiz(){
+    const count = Math.min(5, pool.length);
+    const chosen = shuffle(pool).slice(0, count);
+    quiz = {
+      questions: chosen,
+      answers: {},
+      checked: {},
+      currentIndex: 0,
+      finished: false
+    };
+  }
+
+  function normalize(s){
+    return (s || '').trim().toLowerCase().replace(/\s+/g,' ');
+  }
+
+  function checkCurrent(){
+    const q = quiz.questions[quiz.currentIndex];
+    const given = quiz.answers[q.id] || '';
+    quiz.checked[q.id] = normalize(given) === normalize(q.answer);
+  }
+
+  function render(){
+    if(!loaded){ app.innerHTML = '<div class="loading">Opening the drawer…</div>'; return; }
+    if(activeTab === 'library') renderLibrary();
+    else renderQuiz();
+  }
+
+  function escapeHtml(s){
+    return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function renderLibrary(){
+    let html = '';
+    html += '<div class="index-card">';
+    html += '<div class="content">';
+    html += '<div class="field"><label>New card — question (use ___ for the blank)</label>';
+    html += '<textarea id="newPrompt" rows="2" placeholder="e.g. The mitochondria is the ___ of the cell."></textarea></div>';
+    html += '<div class="field"><label>Answer that fills the blank</label>';
+    html += '<input type="text" id="newAnswer" placeholder="e.g. powerhouse" />';
+    html += '<div class="hint">Tip: keep the answer short and exact — that\'s what you\'ll be quizzed on.</div></div>';
+    html += '<button class="primary" id="addBtn">File this card</button>';
+    html += '</div></div>';
+
+    html += `<div class="pool-count">${pool.length} card${pool.length===1?'':'s'} in the drawer</div>`;
+
+    if(pool.length === 0){
+      html += '<div class="empty-state">The drawer is empty.<br>Add your first trivia card above to get started.</div>';
+    } else {
+      pool.slice().reverse().forEach(q => {
+        html += '<div class="index-card q-card"><div class="content" style="margin-left:0;">';
+        html += '<div style="flex:1;">';
+        html += `<div class="q-text">${escapeHtml(q.prompt)}</div>`;
+        html += `<div class="q-ans">Answer: ${escapeHtml(q.answer)}</div>`;
+        html += `<button class="delete-btn" data-del="${q.id}">Remove card</button>`;
+        html += '</div></div></div>';
+      });
+    }
+
+    app.innerHTML = html;
+
+    document.getElementById('addBtn').addEventListener('click', () => {
+      const p = document.getElementById('newPrompt').value;
+      const a = document.getElementById('newAnswer').value;
+      if(!p.trim() || !a.trim()) return;
+      if(!p.includes('___')){
+        if(!confirm('This question doesn\'t contain "___" for the blank. File it anyway?')) return;
+      }
+      addQuestion(p, a);
+    });
+
+    document.querySelectorAll('[data-del]').forEach(btn => {
+      btn.addEventListener('click', () => deleteQuestion(btn.dataset.del));
+    });
+  }
+
+  function renderQuiz(){
+    if(pool.length === 0){
+      app.innerHTML = '<div class="empty-state">No cards filed yet.<br>Add some questions in the Library tab first.</div>';
+      return;
+    }
+    if(!quiz) startQuiz();
+
+    if(quiz.finished){ renderResults(); return; }
+
+    const total = quiz.questions.length;
+    const q = quiz.questions[quiz.currentIndex];
+    const isChecked = q.id in quiz.checked;
+    const parts = q.prompt.split('___');
+
+    let questionHtml = escapeHtml(parts[0] || '');
+    for(let i = 1; i < parts.length; i++){
+      questionHtml += `<input type="text" class="blank-input" id="blankInput" ${isChecked ? 'disabled' : ''} value="${escapeHtml(quiz.answers[q.id] || '')}" placeholder="…" />`;
+      questionHtml += escapeHtml(parts[i]);
+    }
+    if(parts.length === 1){
+      // no blank marker found — append an input at the end
+      questionHtml += ` <input type="text" class="blank-input" id="blankInput" ${isChecked ? 'disabled' : ''} value="${escapeHtml(quiz.answers[q.id] || '')}" placeholder="type answer…" />`;
+    }
+
+    let html = '';
+    html += `<div class="progress">Card ${quiz.currentIndex + 1} of ${total}</div>`;
+    html += '<div class="index-card" style="position:relative;">';
+    html += '<div class="content">';
+    if(isChecked){
+      html += `<div class="stamp ${quiz.checked[q.id] ? 'correct' : 'wrong'}">${quiz.checked[q.id] ? 'Correct' : 'Try again'}</div>`;
+    }
+    html += `<div class="quiz-question">${questionHtml}</div>`;
+    if(isChecked && !quiz.checked[q.id]){
+      html += `<div class="review-answer">Correct answer: <span class="correct-text">${escapeHtml(q.answer)}</span></div>`;
+    }
+    html += '<div class="quiz-nav">';
+    if(!isChecked){
+      html += '<button class="primary" id="checkBtn">Check answer</button>';
+      html += '<span class="quiz-status"></span>';
+    } else {
+      const isLast = quiz.currentIndex === total - 1;
+      html += `<button class="primary" id="nextBtn">${isLast ? 'See results' : 'Next card'}</button>`;
+      html += '<span class="quiz-status"></span>';
+    }
+    html += '</div>';
+    html += '</div></div>';
+
+    app.innerHTML = html;
+
+    const input = document.getElementById('blankInput');
+    if(input && !isChecked){
+      input.addEventListener('input', () => { quiz.answers[q.id] = input.value; });
+      input.addEventListener('keydown', (e) => { if(e.key === 'Enter') document.getElementById('checkBtn').click(); });
+      input.focus();
+    }
+
+    const checkBtn = document.getElementById('checkBtn');
+    if(checkBtn) checkBtn.addEventListener('click', () => { checkCurrent(); render(); });
+
+    const nextBtn = document.getElementById('nextBtn');
+    if(nextBtn) nextBtn.addEventListener('click', () => {
+      if(quiz.currentIndex === total - 1){ quiz.finished = true; }
+      else { quiz.currentIndex++; }
+      render();
+    });
+  }
+
+  function renderResults(){
+    const total = quiz.questions.length;
+    const correct = quiz.questions.filter(q => quiz.checked[q.id]).length;
+    let html = '';
+    html += `<div class="score-banner">${correct} / ${total}</div>`;
+    html += `<div class="score-sub">${correct === total ? 'Perfect drawer pull.' : 'Cards to revisit are marked below.'}</div>`;
+
+    quiz.questions.forEach((q, i) => {
+      const ok = quiz.checked[q.id];
+      html += '<div class="index-card" style="position:relative;">';
+      html += '<div class="content">';
+      html += `<div class="stamp ${ok ? 'correct' : 'wrong'}">${ok ? 'Correct' : 'Wrong'}</div>`;
+      html += `<div class="q-text">${escapeHtml(q.prompt.replace('___', '_____'))}</div>`;
+      html += `<div class="review-answer">Your answer: <span class="${ok ? 'correct-text' : 'wrong-text'}">${escapeHtml(quiz.answers[q.id] || '(blank)')}</span>`;
+      if(!ok) html += ` &nbsp;·&nbsp; Correct: <span class="correct-text">${escapeHtml(q.answer)}</span>`;
+      html += '</div></div></div>';
+    });
+
+    html += '<div class="row-actions"><button class="primary" id="retakeBtn">Pull five new cards</button></div>';
+    app.innerHTML = html;
+    document.getElementById('retakeBtn').addEventListener('click', () => { startQuiz(); render(); });
+  }
+
+  loadPool();
+})();
+</script>
+</body>
+</html>
